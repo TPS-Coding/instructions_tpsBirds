@@ -39,7 +39,6 @@ class Game():
     def spawn_obstacles(self):
         self.spawn_timer.activate()
         direction = choice(["up", "down"]) ## this will randomly choose between up and down
-        print(direction)
         if direction == 'up':
             pos = (WINDOW_WIDTH + 50, WINDOW_HEIGHT - 50)
         else:
