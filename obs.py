@@ -1,12 +1,11 @@
 from settings import *
 
 class Obstacle(pygame.sprite.Sprite):
-    def __init__(self,groups, pos, direction):
+    def __init__(self,groups, pos, rotation):
         super().__init__(groups)
 
-        self.direction = direction
         self.image = pygame.image.load("../graphics/backgrounds/Obstacle2.png")
-        if self.direction == "down":
+        if rotation == "down":
             self.image = pygame.transform.rotate(self.image, 180)
             
         self.rect = self.image.get_frect(center = pos)
