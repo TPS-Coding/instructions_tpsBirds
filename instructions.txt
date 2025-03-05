@@ -1,0 +1,240 @@
+If we want to make multiple obstacles, we can write a function in main.py for the Game class.
+## here we can use the random library. Look up on google, "python random.choice" and
+## "python random.randint"
+## Let's write code to spawn random obstacles.
+## Because we want them to either be up or down, we have to choose a "direction".
+
+
+
+class Game:
+
+    def __init__(self):
+        ...
+
+
+    def spawn_obstacles(self):
+        direction = choice(["up", "down"]) ## this will randomly choose between up and down
+
+
+
+## ok. Now if we choose 'up', then we want to place the obstacle on the bottom, so we have 
+## pass it a position on the bottom of the screen. What is the y-coordinate at the bottom of 
+## screen? answer: WINDOW_HEIGHT. 
+## Okay, so we know that the pos has to be something like, (x, WINDOW_HEIGHT - 50) 
+## The -50 is there because our pos is for the center of obstacle and we don't want the middle 
+## of the obstacle to spawn at the very bottom of the screen.
+## What about the x-coordinate? maybe off the screen to the right?
+## So our pos would be, pos = (WINDOW_WIDTH + 50, WINDOW_HEIGHT - 50)
+## Let's put this in our code. remember we have to write an if statement
+
+
+class Game:
+
+    def __init__(self):
+        ...
+
+
+    def spawn_obstacles(self):
+        direction = choice(["up", "down"]) ## this will randomly choose between up and down
+        if direction == 'up':
+            pos = (WINDOW_WIDTH + 50, WINDOW_HEIGHT - 50)
+
+
+## Ok, what if it is 'down'. Our position needs to be on top of the screen. So we have to write
+## an else to the if statement. For the y-coordinate, the top of the screen is y = 0, but 
+## remember, we are setting the pos at the center of the obstacle, so it should be at
+## y = 0 + 50.
+## So add the else statement and also call the Obstacle after the if/else statement like below
+
+
+
+class Game:
+
+    def __init__(self):
+        ...
+
+
+    def spawn_obstacles(self):
+        direction = choice(["up", "down"]) ## this will randomly choose between up and down
+        if direction == 'up':
+            pos = (WINDOW_WIDTH + 50, WINDOW_HEIGHT - 50)
+        else:
+            pos = (WINDOW_WIDTH  + 50, 0+50)
+        Obstacle((self.all_sprites, self.collision_sprites), pos)
+
+
+
+## You can now delete the pos and Obstacle call in the ## sprites section
+
+        ## sprites
+        pos = (WINDOW_WIDTH/2,WINDOW_HEIGHT * 0.9) <-- delete this **************
+        BG(self.all_sprites)
+        self.player = Player(self.all_sprites)
+        Obstacle((self.all_sprites, self.collision_sprites), pos) <-- delete this ************
+
+
+## Remember to call self.spawn_obstacles() in the run method
+
+
+def run(self):
+        dt = 0.08
+        while self.running:
+
+            self.clock.tick(FRAMERATE)
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.running = False
+                    pygame.quit()
+                    sys.exit()
+                    
+
+            self.spawn_obstacles()  <-- Add this here ****************
+
+
+            ## draw
+            self.display_surface.fill('purple')
+            self.all_sprites.draw(self.display_surface)
+
+
+            ### update
+            self.hit_timer.update()
+            self.all_sprites.update(dt)
+            self.check_collisions()
+            pygame.display.update()
+            
+            .....
+
+
+### Now run the code. What happens?
+
+### They are spawning at 120 frames/sec. This is not what we want. How did we deal with this 
+## before?
+## We added a timer. So let's do that.
+## In main in the def __init__ of the Game class let's add a spawn timer
+
+
+
+class Game():
+    def __init__(self):
+
+        pygame.init()
+        self.display_surface = pygame.display.set_mode(SCREEN_SIZE)
+        pygame.display.set_caption("TPS Birds")
+
+        self.clock = pygame.time.Clock()
+        self.running = True
+        self.lives = 3
+        self.hit_timer = Timer(1500)
+        self.spawn_timer = Timer(500) <-- Add this here *************
+
+
+        ....
+
+## Now we have to activate the timer, update the timer, and add the conditional statement to
+## the run statement before we call the function, so that we only call the function is the 
+## timer is not active 
+
+## So in the run method
+
+
+
+def run(self):
+        dt = 0.08
+        while self.running:
+
+            self.clock.tick(FRAMERATE)
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.running = False
+                    pygame.quit()
+                    sys.exit()
+                    
+            if not self.spawn_timer.active:  <-- Add this here ****************
+                self.spawn_obstacles()  ### remember to indent this line
+
+
+            ## draw
+            self.display_surface.fill('purple')
+            self.all_sprites.draw(self.display_surface)
+
+
+            ### update
+            self.hit_timer.update()
+            self.all_sprites.update(dt)
+            self.check_collisions()
+            pygame.display.update()
+            
+            .....
+            
+## Now activate the timer in the spawn_obstacles method
+
+
+ def spawn_obstacles(self):
+        self.spawn_timer.activate()  <-- Add this line here ****************
+        direction = choice(["up", "down"]) ## this will randomly choose between up and down
+        if direction == 'up':
+            pos = (WINDOW_WIDTH + 50, WINDOW_HEIGHT - 50)
+        else:
+            pos = (WINDOW_WIDTH  + 50, 0+50)
+        Obstacle((self.all_sprites, self.collision_sprites), pos)
+
+
+
+## Don't forget to update it in the run method
+
+            .....
+
+            ### update
+            self.hit_timer.update()
+            self.spawn_timer.update() <--- Add this here **********
+            self.all_sprites.update(dt)
+            self.check_collisions()
+            pygame.display.update()
+            
+
+
+## Now run the code. What is happening? Is it what you expected?
+## Can you think of why, there are so many obstacles still?
+## So every 0.5 secs we are spawning a new obstacle, but what happened to the old ones?
+## They just keep resetting. Do we want this behavior now? No, we want them to disappear 
+## forever. So we have to change the code in obs.py.
+## If the obstacle passes the player, we want to destroy the obstacle. 
+## So let's rewrite the move() method.
+
+## in obs.py this is what we have. Instead of resetting it, we need to kill it
+
+
+    def move(self, dt):
+        self.rect.x += self.direction * self.speed * dt
+        if self.rect.right <= 0:
+            self.rect.left = WINDOW_WIDTH  <--- delete this and write self.kill()
+
+
+## so the move method should look like this:
+
+    def move(self, dt):
+        self.rect.x += self.direction * self.speed * dt
+        if self.rect.right <= 0:
+            self.kill()
+
+
+
+## Now run the code. What happens?
+## Maybe the timer is too fast for the spawn, increase the time to get the spawns more realistic.
+
+## I set mine to 2000, and that looks better. 
+
+## Now the top obstacle is not the right "way". It is upside down. How do we fix this?
+## Look up on pyga.me, transform
+## Click the transform link
+## Is there anything there that might help us?
+
+## Look at pygame.transform.rotate
+
+## Can you figure out how to rotate an image?
+## Where do we draw the image? 
+## How will the program know it has to rotate it?
+## Is there any info we can pass to the Obstacle class to let it know if it has to rotate
+## the image?
